@@ -57,11 +57,15 @@ char buf[MAX_LINE_LENG];
 "*="    {token(*=);}
 "/="    {token(/=);}
 
-bool|break|char|case|class|continue|declare|do|else|exit|false|float|for|fun|if|int|loop|print|println|return|string|true|val|var|while  {token(yytext);}
+bool|break|char|case|class|continue|declare|do|else|exit|float|for|fun|if|int|loop|print|println|return|string|val|var|while  {token(yytext);}
+
+true|false {tokenString(boolean, yytext);}
 
 [a-zA-Z]+[a-zA-Z0-9_]*   {tokenString(id, yytext);}
 
-[0-9]\.[0-9]+ {tokenFloat(float,yytext);}
+
+[1-9][0-9]*\.[0-9]+|[0-9]\.[0-9]+ {tokenFloat(float,yytext);}
+[1-9][0-9]*\.[0-9]+[eE][-+][0-9]* {tokenFloat(float,yytext);}
 [/+-]?[1-9]?[0-9]*   {tokenInteger(integer, yytext);}
 
 
