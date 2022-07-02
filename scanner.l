@@ -1,6 +1,16 @@
 
+digit       [0-9]
+letter      [a-zA-Z]
+integer     [+-]?(0|[1-9]){digit}*
+real        [+-]?(0|[1-9]){digit}*\.{digit}+([eE][-+]?{digit}+)?
+identifier  {letter}+({letter}|{digit}|_)*
+string      \"([^\"\n]|\"\")*\"
+
+
+
 %{
 #define LIST     strcat(buf,yytext)
+
 #define token(t) {LIST;                                \
                  if(yytext[0]>=97 && yytext[0]<=122){  \
                     int i=strlen(yytext)-1;            \
@@ -14,17 +24,26 @@
                     printf("<%s>\n", #t);              \
                  }                                     
 #define tokenChar(t) {LIST; printf("<'%c'>\n", t);}
-#define tokenInteger(t,i) {LIST; printf("<%s:%d>\n",#t,atoi(i));}
-#define tokenFloat(t,i) {LIST; printf("<%s:%f>\n",#t,atof(i));}
-#define tokenString(t,s) {LIST; printf("<%s:%s>\n",#t,s);}
+#define tokenInteger(t,i) {LIST; printf("<%s: %d>\n",#t,atoi(i));}
+#define tokenFloat(t,i) {LIST; printf("<%s: %f>\n",#t,atof(i));}
+#define tokenString(t,s) {LIST; printf("<%s: %s>\n",#t,s);}
+#define tokenComment(t)  {LIST; printf("%s\n", t);}
 
 #define MAX_LINE_LENG 256
 
 int linenum = 1;
 char buf[MAX_LINE_LENG];
+char string_revise[MAX_LINE_LENG];
 %}
 
 %%
+
+
+"//".*    {LIST;}
+
+\/\*([^*]|(\*+[^*/]))*\*+\/    {LIST;}
+
+
 ","     {token(',');}
 ":"     {token(':');}
 ";"     {token(';');}
@@ -59,19 +78,46 @@ char buf[MAX_LINE_LENG];
 
 bool|break|char|case|class|continue|declare|do|else|exit|float|for|fun|if|int|loop|print|println|return|string|val|var|while  {token(yytext);}
 
-true|false {tokenString(boolean, yytext);}
-
-[a-zA-Z]+[a-zA-Z0-9_]*   {tokenString(id, yytext);}
 
 
-[1-9][0-9]*\.[0-9]+|[0-9]\.[0-9]+ {tokenFloat(float,yytext);}
-[1-9][0-9]*\.[0-9]+[eE][-+][0-9]* {tokenFloat(float,yytext);}
-[/+-]?[1-9]?[0-9]*   {tokenInteger(integer, yytext);}
+{real}        {tokenFloat(float,yytext);}
+{integer}     {tokenInteger(integer, yytext);}
+
+true|false    {tokenString(boolean, yytext);}
+
+{identifier}  {tokenString(id, yytext);}
+{string}      {
+		int idx = 0;           
+		for(int i=1; i<strlen(yytext)-1; i++){
+   			if(yytext[i]=='"' && yytext[i+1] == '"'){
+     				i+=1;
+   			}
+   			string_revise[idx++] = yytext[i];
+		}
+			string_revise[idx] = '\0';
+			tokenString(string, string_revise);
+                        
+              }
+
+
+
 
 
 \n      {
         LIST;
-        printf("%d: %s", linenum++, buf);
+        int idx = 0;
+        for(int i=0; i<strlen(buf); i++){
+            if(buf[i] == '\n'){   
+               string_revise[idx] = '\0';
+               printf("%d: %s\n", linenum++, string_revise);
+               idx=0;
+            }
+            else
+               string_revise[idx++] = buf[i];
+        
+        }
+
+        
         buf[0] = '\0';
         }
 
