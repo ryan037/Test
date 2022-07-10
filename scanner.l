@@ -9,6 +9,9 @@ string      \"([^\"\n]|\"\")*\"
 
 
 %{
+
+#include "symtab.h"
+
 #define LIST     strcat(buf,yytext)
 
 #define token(t) {LIST;                                \
@@ -34,6 +37,7 @@ string      \"([^\"\n]|\"\")*\"
 int linenum = 1;
 char buf[MAX_LINE_LENG];
 char string_revise[MAX_LINE_LENG];
+SymbolTable symtab;
 %}
 
 %%
@@ -85,7 +89,7 @@ bool|break|char|case|class|continue|declare|do|else|exit|float|for|fun|if|int|lo
 
 true|false    {tokenString(boolean, yytext);}
 
-{identifier}  {tokenString(id, yytext);}
+{identifier}  {tokenString(id, yytext); symtab.insert(yytext);}
 {string}      {
 		int idx = 0;           
 		for(int i=1; i<strlen(yytext)-1; i++){
@@ -129,11 +133,18 @@ true|false    {tokenString(boolean, yytext);}
         printf("bad character:'%s'\n",yytext);
         exit(-1);
         }
+
+
+
+
+
 %%
 
 int main(int argc, char **argv)
 {
    yylex();
+   printf("--------------------------------SymbolTable Below\n");
+   symtab.dump();
    exit(0);
    
 }
