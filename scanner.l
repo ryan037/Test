@@ -14,17 +14,19 @@ string      \"([^\"\n]|\"\")*\"
 
 #define LIST     strcat(buf,yytext)
 
-#define token(t) {LIST;                                \
-                 if(yytext[0]>=97 && yytext[0]<=122){  \
-                    int i=strlen(yytext)-1;            \
-                    while(i>=0){                       \
-                      yytext[i]-=32;                   \
-                      i-=1;                            \
-                    }                                  \
-                    printf("<%s>\n", yytext);          \
-                 }                                     \
-                 else                                  \
-                    printf("<%s>\n", #t);              \
+#define token(t) {LIST;                                       \
+                 int flag=0;                                  \
+                 for(int i=0; i<strlen(yytext); i++){         \
+                    if(yytext[i] >= 97 && yytext[i] <= 122){  \
+                        yytext[i]-=32;                        \
+                        flag = 1;                             \
+                    }                                         \
+                 }                                            \
+                 if(flag == 1){                               \
+                    printf("<%s>\n", yytext);                 \
+                 }                                            \
+                 else                                         \
+                    printf("<%s>\n", #t);                     \
                  }                                     
 #define tokenChar(t) {LIST; printf("<'%c'>\n", t);}
 #define tokenInteger(t,i) {LIST; printf("<%s: %d>\n",#t,atoi(i));}
@@ -80,7 +82,7 @@ SymbolTable symtab;
 "*="    {token(*=);}
 "/="    {token(/=);}
 
-bool|break|char|case|class|continue|declare|do|else|exit|float|for|fun|if|int|loop|print|println|return|string|val|var|while  {token(yytext);}
+bool|break|char|case|class|continue|declare|do|else|exit|float|for|fun|if|int|loop|print|println|return|string|val|var|while|as|as\?|in|\!in|interface|is|\!is|null|object|package|super|this|throw|try|typealiat|typeof|when  {token(yytext);}
 
 
 

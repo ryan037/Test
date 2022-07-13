@@ -21,11 +21,11 @@ string SymbolTable::insert(string s)
    pair<map<string, string>::iterator, bool> retPair;
    retPair = this->symbolTable.insert(pair<string,string>(s,s));
    if(retPair.second == true){
-	cout << "Insert Successfully\n";
+//	cout << "Insert Successfully\n";
         return s;
    }
-   else
-	cout << "Insert Failure\n";
+//   else
+//	cout << "Insert Failure\n";
    return "False";
 }
 
